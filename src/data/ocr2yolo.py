@@ -43,11 +43,14 @@ import argparse
 import pathlib
 import re
 
-parser = argparse.ArgumentParser()
-parser.add_argument('ocr_folder', help='path to ocr folder')
-args = parser.parse_args()
+
 
 PATH = '/media/max/Transcend/max/plate_recognition/plate_detection_external_datasets/data/ocr_yolo/data'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('ocr_folder', default=PATH, help='path to ocr folder')
+args = parser.parse_args()
+
 
 def find_bbox_coord(data: list, bbox_pattern='position_plate:') -> list:
     """
