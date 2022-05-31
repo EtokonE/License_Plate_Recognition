@@ -1,0 +1,3 @@
+[submodule "models/yolov5_lpr"]
+	path = models/yolov5_lpr
+	url = https://github.com/EtokonE/yolov5_lpr.git
