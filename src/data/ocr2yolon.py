@@ -22,8 +22,8 @@ class YoloAnnotationXYWHNorm(NamedTuple):
 def xywh2xywhn2(ann_xywh: YoloAnnotationXYWH, w, h) -> YoloAnnotationXYWHNorm:
     return(YoloAnnotationXYWHNorm(
         object_class = ann_xywh.object_class,
-        x_center = round(ann_xywh.x_center / w, 6),
-        y_center = round(ann_xywh.y_center / h, 6),
+        x_center = round((ann_xywh.x_center + 0.5 * ann_xywh.width) / w, 6),
+        y_center = round((ann_xywh.y_center + 0.5 * ann_xywh.height) / h, 6),
         width = round(ann_xywh.width / w, 6),
         height = round(ann_xywh.height / h, 6)
         ))
@@ -40,7 +40,7 @@ def read_ann_file(text_file: path) -> str:
     return data
 
 def get_annotation(raw_annotation: str) -> YoloAnnotationXYWH:
-    filtred_raw = raw_annotation[:-2].split(' ')
+    filtred_raw = raw_annotation[:-1].split(' ')
     return YoloAnnotationXYWH(
             object_class = int(filtred_raw[0]), 
             x_center = int(filtred_raw[1]),
@@ -65,12 +65,16 @@ def write_anat_file(text_file, normalized_list):
 def normalize_annotation(data_folder, w=1920, h=1080):
     for text_file in pathlib.Path(path.join(data_folder, 'labels/')).glob('*.txt'):
         raw_annotation = read_ann_file(text_file)
+        print(raw_annotation)
         annotation_list = parse_ann_file(raw_annotation)
+        print(annotation_list)
         normalized_list = []
         for anat in annotation_list:
             normalized_anat = xywh2xywhn2(anat, w, h)
+            print(normalized_anat)
             normalized_list.append(normalized_anat)
         write_anat_file(path.join(data_folder, 'norm_labels', text_file.name), normalized_list)
+        print(normalized_list)
         
 
 
