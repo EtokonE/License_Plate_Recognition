@@ -28,9 +28,6 @@ _C.LPR_dataset.VAL_PATH = osp.join(_C.LPR_dataset.PATH, 'val')
 _C.LPR_dataset.TEST_PATH = osp.join(_C.LPR_dataset.PATH, 'test')
 
 
-
-
-
 def get_cfg_defaults():
     """Get the yacs CfgNode object with default values"""
     return _C.clone()
