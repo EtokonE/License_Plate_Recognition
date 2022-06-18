@@ -11,8 +11,8 @@ _C.ROOT.PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recogni
 _C.CHARS = CN()
 _C.CHARS.LIST = [
      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-     'А', 'В', 'Е', 'К', 'М', 'Н', 'О', 'Р', 'С', 'Т',
-     'У', 'Х', '-'
+     'A', 'B', 'E', 'K', 'M', 'H', 'O', 'P', 'C', 'T',
+     'Y', 'X', '-'
 ]
 
 # LPRNet
@@ -26,7 +26,7 @@ _C.LPR_dataset.PATH = osp.join(_C.ROOT.PATH, 'data/raw/licence_recognition/autor
 _C.LPR_dataset.TRAIN_PATH = osp.join(_C.LPR_dataset.PATH, 'train')
 _C.LPR_dataset.VAL_PATH = osp.join(_C.LPR_dataset.PATH, 'val')
 _C.LPR_dataset.TEST_PATH = osp.join(_C.LPR_dataset.PATH, 'test')
-
+_C.LPR_dataset.IMG_SIZE = (94, 24)
 
 def get_cfg_defaults():
     """Get the yacs CfgNode object with default values"""

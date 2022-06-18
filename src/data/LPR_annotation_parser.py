@@ -42,7 +42,7 @@ class JsonParser(LPRAnnotationParser):
             print('Exception', e.json())
 
 
-def parse_lpr_annotation(ann_file: Path, parser: LPRAnnotationParser) -> Annotation:
+def parse_lpr_annotation(ann_file: Path, parser: LPRAnnotationParser=JsonParser()) -> Annotation:
     """Parse ann_file using parser"""
     return parser.parse_annotation(ann_file)
 
