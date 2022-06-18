@@ -1,10 +1,13 @@
 import json
 import os
 import sys
-from pathlib import Path
+import os.path as osp
 from pydantic import BaseModel, ValidationError, Field
 sys.path.append('../../')
 from config.config import get_cfg_defaults
+
+
+Path = str
 
 
 class ImageSize(BaseModel):
@@ -49,7 +52,7 @@ def parse_lpr_annotation(ann_file: Path, parser: LPRAnnotationParser=JsonParser(
 
 def main():
     cfg = get_cfg_defaults()
-    json_ann_file = Path(cfg.LPR_dataset.TRAIN_PATH) / 'ann/A001EH62.json'
+    json_ann_file = osp.join(cfg.LPR_dataset.TRAIN_PATH, 'ann/A001EH62.json')
     lpr_annotation = parse_lpr_annotation(ann_file=json_ann_file,
                                           parser=JsonParser())
     print(lpr_annotation)

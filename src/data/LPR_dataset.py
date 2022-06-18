@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import torch
 import sys
+import os.path as osp
 from pathlib import Path
 from typing import Tuple
 from torch.utils.data import Dataset, DataLoader
@@ -24,16 +25,14 @@ class LPRDataset(Dataset):
     """
     data_modes = ['train', 'val', 'test']
     def __init__(self,
-                 data_dir: Path,
+                 data_dir: str,
                  chars: list,
                  mode: str,
                  img_size: Tuple[int, int]):
 
-        self.data_dir = Path(data_dir)
-        self.annotation_files = list((data_dir / 'ann').glob('*.json'))
-        print(len(self.annotation_files))
-        print(len(list((data_dir / 'img').glob('*.png'))))
-        self.image_dir = data_dir / 'img'
+        self.data_dir = data_dir
+        self.annotation_files = list((Path(data_dir) / 'ann').glob('*.json'))
+        self.image_dir = osp.join(data_dir, 'img')
         self.chars_dict = {char:i for i, char in enumerate(chars)}
         self.mode = mode
 
@@ -62,13 +61,11 @@ class LPRDataset(Dataset):
 
     def _load_sample(self, ann: Annotation):
         try:
-            #image_path = self.image_dir.joinpath(ann.image_name).with_suffix('.png')
-            image_path = str(self.image_dir) + '/' + ann.image_name + '.png'
+            image_path = osp.join(self.image_dir, ann.image_name,) + '.png'
             image = cv2.imread(str(image_path))
             return image
         except Exception as e:
-#            print(str(e))
-            print(ann)
+            print(str(e))
 
     def _prepare_sample(self, image):
         image = cv2.resize(image, self.img_size)
@@ -101,9 +98,9 @@ def collate_fn(batch):
 
 if __name__ == '__main__':
     cfg = get_cfg_defaults()
-    dataset = LPRDataset(data_dir=Path(cfg.LPR_dataset.TRAIN_PATH),
+    dataset = LPRDataset(data_dir=Path(cfg.LPR_dataset.VAL_PATH),
                          chars=cfg.CHARS.LIST,
-                         mode='train',
+                         mode='val',
                          img_size=cfg.LPR_dataset.IMG_SIZE)
     dataloader = DataLoader(dataset, batch_size=128, shuffle=True,
                             num_workers=2, collate_fn=collate_fn)
