@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from zmq import device
 
 
 class SpatialTransformer(nn.Module):
@@ -21,7 +20,7 @@ class SpatialTransformer(nn.Module):
         )
 
         self.fc_affine = nn.Sequential(
-            nn.Linear(in_features=32 * 14 * 2, 32),
+            nn.Linear(in_features=32 * 14 * 2, out_features=32),
             nn.ReLU(inplace=True),
             nn.Linear(32, 6)
         )
@@ -36,8 +35,8 @@ class SpatialTransformer(nn.Module):
         theta = self.fc_affine(x_tr)
         theta = theta.view(-1, 2, 3)
 
-        grid = F.affine_grid(theta, x.size())
-        x = F.grid_sample(x, grid)
+        grid = F.affine_grid(theta, x.size(), align_corners=True)
+        x = F.grid_sample(x, grid, align_corners=True)
 
         return x
 
@@ -45,6 +44,6 @@ class SpatialTransformer(nn.Module):
 if __name__ == '__main__':
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = SpatialTransformer().to(device)
-    imput = torch.Tensor(2, 3, 24, 94).to(device)
-    output = model(input)
-    print('Output shape is: ', output.shape, '\n', 'Output: ', output)
+    input_ = torch.Tensor(2, 3, 24, 94).to(device)
+    output = model(input_)
+    print('Output shape is: ', output.shape)
