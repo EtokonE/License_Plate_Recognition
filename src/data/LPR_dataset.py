@@ -1,13 +1,11 @@
 import numpy as np
 import cv2
 import torch
-import sys
 import os.path as osp
 from pathlib import Path
 from typing import Tuple
 from torch.utils.data import Dataset, DataLoader
 from LPR_annotation_parser import Annotation, parse_lpr_annotation
-sys.path.append('../../../')
 from config.config import get_cfg_defaults
 
 

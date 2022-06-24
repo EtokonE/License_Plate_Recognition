@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 import sys
 import os
+from src.config.config import combine_config
 
 
 def get_root_path():
@@ -38,6 +39,22 @@ def sparsed_tuple_for_ctc(predicted_length: int, gt_lengths: list[int]):
 
 def create_parser():
     parser = argparse.ArgumentParser(descriprion='Parameters to train LPRNet with ST module')
+    parser.add_argument('--out_dir', type=str, help='Directory to save results')
+    parser.add_argument('--config', type=str, help='Path to experiment config')
+    args = parser.parse_args()
+    return args
 
 
-print(get_root_path())
+def get_final_config():
+    args = create_parser()
+    cfg = combine_config(args.config)
+    cfg.LPRNet.OUT_FOLDER = args.out_dir
+    return cfg
+
+
+def train():
+    cfg = get_final_config()
+    print(cfg)
+
+
+train()

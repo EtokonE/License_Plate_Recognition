@@ -1,9 +1,6 @@
 import json
-import os
-import sys
 import os.path as osp
 from pydantic import BaseModel, ValidationError, Field
-sys.path.append('../../')
 from config.config import get_cfg_defaults
 
 

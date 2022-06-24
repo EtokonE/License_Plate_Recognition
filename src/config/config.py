@@ -19,6 +19,7 @@ _C.CHARS.LIST = [
 _C.LPRNet = CN()
 _C.LPRNet.DROPOUT = 0.5
 _C.LPRNet.OUT_INDICEC = (2, 6, 13, 22)
+_C.LPRNet.OUT_FOLDER = osp.join(_C.ROOT.PATH(), 'reports')
 
 # Plate recognition dataset
 _C.LPR_dataset = CN()
@@ -31,3 +32,17 @@ _C.LPR_dataset.IMG_SIZE = (94, 24)
 def get_cfg_defaults():
     """Get the yacs CfgNode object with default values"""
     return _C.clone()
+
+
+def combine_config(cfg_path: str):
+     """Combine base config with experiment relative config
+
+     Args:
+          cfg_path (str): file in .yaml or .yml format
+     """
+     base_config = get_cfg_defaults()
+     if cfg_path is not None and cfg_path.exists():
+          base_config.merge_from_file(cfg_path)
+     return base_cfg
+
+

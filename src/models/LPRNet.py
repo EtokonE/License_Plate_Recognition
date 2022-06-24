@@ -105,8 +105,6 @@ class LPRNet(nn.Module):
 if __name__ == '__main__':
     
     from torchsummary import summary
-    import sys
-    sys.path.append('../../../')
     from config.config import get_cfg_defaults
 
     cfg = get_cfg_defaults()
