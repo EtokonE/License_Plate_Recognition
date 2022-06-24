@@ -43,6 +43,6 @@ def combine_config(cfg_path: str):
      base_config = get_cfg_defaults()
      if cfg_path is not None and cfg_path.exists():
           base_config.merge_from_file(cfg_path)
-     return base_cfg
+     return base_config
 
 
