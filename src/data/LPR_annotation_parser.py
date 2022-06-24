@@ -1,7 +1,7 @@
 import json
 import os.path as osp
 from pydantic import BaseModel, ValidationError, Field
-from config.config import get_cfg_defaults
+from src.config.config import get_cfg_defaults
 
 
 Path = str

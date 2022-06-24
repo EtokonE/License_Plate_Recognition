@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Tuple
 from torch.utils.data import Dataset, DataLoader
 from LPR_annotation_parser import Annotation, parse_lpr_annotation
-from config.config import get_cfg_defaults
+from src.config.config import get_cfg_defaults
 
 
 class LPRDataset(Dataset):

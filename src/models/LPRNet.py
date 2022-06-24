@@ -103,9 +103,8 @@ class LPRNet(nn.Module):
         return logits
 
 if __name__ == '__main__':
-    
     from torchsummary import summary
-    from config.config import get_cfg_defaults
+    from src.config.config import get_cfg_defaults
 
     cfg = get_cfg_defaults()
     

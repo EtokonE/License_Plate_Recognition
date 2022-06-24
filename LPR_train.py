@@ -49,6 +49,7 @@ def get_final_config():
     args = create_parser()
     cfg = combine_config(args.config)
     cfg.LPRNet.OUT_FOLDER = args.out_dir
+    cfg.ROOT.PATH = get_root_path()
     return cfg
 
 
