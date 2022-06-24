@@ -19,7 +19,7 @@ _C.CHARS.LIST = [
 _C.LPRNet = CN()
 _C.LPRNet.DROPOUT = 0.5
 _C.LPRNet.OUT_INDICEC = (2, 6, 13, 22)
-_C.LPRNet.OUT_FOLDER = osp.join(_C.ROOT.PATH(), 'reports')
+_C.LPRNet.OUT_FOLDER = osp.join(_C.ROOT.PATH, 'reports')
 
 # Plate recognition dataset
 _C.LPR_dataset = CN()
