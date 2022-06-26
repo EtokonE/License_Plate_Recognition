@@ -42,13 +42,13 @@ class GreedyDecoder(Decoder):
             predicted_labels = []
             for j in range(single_prediction.shape[1]):
                 predicted_labels.append(np.argmax(single_prediction[:, j], axis=0))
-
+            #print(predicted_labels)
             without_repeating = []
             current_char = predicted_labels[0]
             if current_char != len(chars_list) - 1:
                 without_repeating.append(current_char)
             for c in predicted_labels:
-                if (current_char == c) or (current_char == len(chars_list) - 1):
+                if (current_char == c) or (c == len(chars_list) - 1):
                     if c == len(chars_list) - 1:
                         current_char = c
                     continue

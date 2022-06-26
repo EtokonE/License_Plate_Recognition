@@ -66,7 +66,8 @@ class LPRDataset(Dataset):
             print(str(e))
 
     def _prepare_sample(self, image):
-        image = cv2.resize(image, self.img_size)
+        cv2.imwrite('reports/raw_image.png', image)
+        image = cv2.resize(image, self.img_size, interpolation=cv2.INTER_AREA)
         image = image.astype('float32')
         image -= 127.5
         image *= 0.0078125
@@ -109,6 +110,6 @@ if __name__ == '__main__':
         print('label length is', len(lengths))
         break
     im, label, length = dataset[3]
-    print(label)
+    print(im.shape, label)
 
 
