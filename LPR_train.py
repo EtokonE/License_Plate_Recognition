@@ -218,7 +218,7 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            print(_, pred_labels)
+            #print(_, pred_labels)
             start = 0
             true_positive = 0
             for i, length in enumerate(lengths):

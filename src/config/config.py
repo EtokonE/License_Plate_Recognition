@@ -5,7 +5,8 @@ _C = CN()
 
 # Root dir (different for PC and Server)
 _C.ROOT = CN()
-_C.ROOT.PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' # LPR project dir
+#_C.ROOT.PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' # LPR project dir
+_C.ROOT.PATH = '.'
 
 # Chars parameters
 _C.CHARS = CN()
@@ -40,7 +41,7 @@ _C.LPRNet.TRAIN.CTC_REDUCTION = 'mean' # Reduction: 'none' | 'mean' | 'sum'
 
 # Plate recognition dataset
 _C.LPR_dataset = CN()
-_C.LPR_dataset.PATH_RELATED_ROOT = 'data/raw/licence_recognition/autoriaNumberplateOcrRu-2021-09-01/' # Train path
+_C.LPR_dataset.PATH_RELATED_ROOT = 'data/raw/recognition_dataset/' # Train path
 _C.LPR_dataset.PATH = osp.join(_C.ROOT.PATH, _C.LPR_dataset.PATH_RELATED_ROOT)
 _C.LPR_dataset.TRAIN_FOLDER = 'train' # Train folder (contains: -> ann & img <- filders)
 _C.LPR_dataset.TRAIN_PATH = osp.join(_C.LPR_dataset.PATH, _C.LPR_dataset.TRAIN_FOLDER)
