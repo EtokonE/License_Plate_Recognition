@@ -3,5 +3,5 @@ LPRNet:
     NUM_EPOCHS: 5
     SAVE_PERIOD: 2
 LPR_dataset:
-  TRAIN_FOLDER: test_run
-  VAL_FOLDER: test_run
+  TRAIN_FOLDER: 'test_run'
+  VAL_FOLDER: 'test_run'

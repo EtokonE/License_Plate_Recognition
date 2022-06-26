@@ -59,5 +59,10 @@ def combine_config(cfg_path: str):
      base_config = get_cfg_defaults()
      if cfg_path is not None and osp.exists(cfg_path):
           base_config.merge_from_file(cfg_path)
+
+     base_config.LPR_dataset.PATH = osp.join(base_config.ROOT.PATH, base_config.LPR_dataset.PATH_RELATED_ROOT)
+     base_config.LPR_dataset.TRAIN_PATH = osp.join(base_config.LPR_dataset.PATH, base_config.LPR_dataset.TRAIN_FOLDER)
+     base_config.LPR_dataset.VAL_PATH = osp.join(base_config.LPR_dataset.PATH, base_config.LPR_dataset.VAL_FOLDER)
+     base_config.LPR_dataset.TEST_PATH = osp.join(base_config.LPR_dataset.PATH, base_config.LPR_dataset.TEST_FOLDER)
      return base_config
 
