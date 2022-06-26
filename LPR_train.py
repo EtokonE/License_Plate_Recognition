@@ -315,9 +315,9 @@ def train():
         # Define optimizer & loss & sheduler
         optimizer = torch.optim.Adam([{'params': stn.parameters(), 'weight_decay': 2e-5},
                                       {'params': lprnet.parameters()}],
-                                     lr=0.01)
+                                     lr=cfg.LPRNet.TRAIN.LR)
         ctc_loss = nn.CTCLoss(blank=len(cfg.CHARS.LIST) - 1, reduction='mean')
-        lr_sheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.99)
+        lr_sheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=cfg.LPRNet.TRAIN.LR_SHED_GAMMA)
 
         for epoch in range(cfg.LPRNet.TRAIN.NUM_EPOCHS):
             start_time_ep = time.time()
@@ -346,7 +346,7 @@ def train():
 
             pbar_outer.update(1)
             history.append((train_loss, train_acc, val_loss, val_acc))
-            if epoch % cfg.LPRNet.TRAIN.SAVE_PERIOD == 0:
+            if (epoch + 1) % cfg.LPRNet.TRAIN.SAVE_PERIOD == 0:
                 torch.save({
                     'epoch': epoch,
                     'net_state_dict': lprnet.state_dict()},
