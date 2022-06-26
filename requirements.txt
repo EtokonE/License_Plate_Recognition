@@ -24,3 +24,5 @@ typing_extensions==4.2.0
 urllib3==1.26.9
 wrapt==1.14.1
 yacs==0.1.8
+tqdm==4.64.0
+

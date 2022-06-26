@@ -110,8 +110,13 @@ if __name__ == '__main__':
     
     lprnet = LPRNet(class_num=len(cfg.CHARS.LIST), 
                     dropout_prob=cfg.LPRNet.DROPOUT,
-                    out_indices=cfg.LPRNet.OUT_INDICEC)
+                    out_indices=cfg.LPRNet.OUT_INDEXES)
     print(lprnet)
 
-    summary(lprnet, (3, 24, 94), device='cpu') 
+    summary(lprnet, (3, 24, 94), device='cpu')
+
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    input_ = torch.Tensor(2, 3, 24, 94).to(device)
+    output = lprnet(input_)
+    print('Output shape is: ', output.shape)
 

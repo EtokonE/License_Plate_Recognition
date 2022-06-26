@@ -5,7 +5,7 @@ import os.path as osp
 from pathlib import Path
 from typing import Tuple
 from torch.utils.data import Dataset, DataLoader
-from LPR_annotation_parser import Annotation, parse_lpr_annotation
+from src.data.LPR_annotation_parser import Annotation, parse_lpr_annotation
 from src.config.config import get_cfg_defaults
 
 
@@ -22,6 +22,7 @@ class LPRDataset(Dataset):
 
     """
     data_modes = ['train', 'val', 'test']
+
     def __init__(self,
                  data_dir: str,
                  chars: list,
@@ -31,7 +32,7 @@ class LPRDataset(Dataset):
         self.data_dir = data_dir
         self.annotation_files = list((Path(data_dir) / 'ann').glob('*.json'))
         self.image_dir = osp.join(data_dir, 'img')
-        self.chars_dict = {char:i for i, char in enumerate(chars)}
+        self.chars_dict = {char: i for i, char in enumerate(chars)}
         self.mode = mode
 
         if self.mode not in self.data_modes:
@@ -39,7 +40,6 @@ class LPRDataset(Dataset):
             raise NameError
 
         self.img_size = img_size
-
 
     def __len__(self):
         return len(self.annotation_files)

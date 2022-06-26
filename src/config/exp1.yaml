@@ -1,0 +1,3 @@
+LPRNet:
+  TRAIN:
+    NUM_EPOCHS: 100

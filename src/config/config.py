@@ -18,8 +18,18 @@ _C.CHARS.LIST = [
 # LPRNet
 _C.LPRNet = CN()
 _C.LPRNet.DROPOUT = 0.5
-_C.LPRNet.OUT_INDICEC = (2, 6, 13, 22)
-_C.LPRNet.OUT_FOLDER = osp.join(_C.ROOT.PATH, 'reports')
+_C.LPRNet.OUT_INDEXES = (2, 6, 13, 22)
+_C.LPRNet.PREDICTED_LENGTHS = 18
+
+# Train LPRNet
+_C.LPRNet.TRAIN = CN()
+_C.LPRNet.TRAIN.OUT_FOLDER = osp.join(_C.ROOT.PATH, 'reports')
+_C.LPRNet.TRAIN.PRETRAINED_MODEL = None
+_C.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER = None
+_C.LPRNet.TRAIN.IMG_SIZE = (94, 24)
+_C.LPRNet.TRAIN.BATCH_SIZE = 128
+_C.LPRNet.TRAIN.NUM_WORKERS = 4
+_C.LPRNet.TRAIN.NUM_EPOCHS = 4
 
 # Plate recognition dataset
 _C.LPR_dataset = CN()
@@ -41,8 +51,7 @@ def combine_config(cfg_path: str):
           cfg_path (str): file in .yaml or .yml format
      """
      base_config = get_cfg_defaults()
-     if cfg_path is not None and cfg_path.exists():
+     if cfg_path is not None and osp.exists(cfg_path):
           base_config.merge_from_file(cfg_path)
      return base_config
-
 
