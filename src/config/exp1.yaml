@@ -1,6 +1,6 @@
 LPRNet:
   TRAIN:
-    NUM_EPOCHS: 5
+    NUM_EPOCHS: 100
     SAVE_PERIOD: 2
 LPR_dataset:
   TRAIN_FOLDER: 'test_run'

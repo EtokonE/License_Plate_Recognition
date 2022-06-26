@@ -100,14 +100,16 @@ def create_log_template():
 
 
 def weights_initialization(m):
-    for key in m.state_dict():
-        if key.split('.')[-1] == 'weight':
-            if 'conv' in key:
-                nn.init.kaiming_normal_(m.state_dict()[key], mode='fan_out')
-            if 'bn' in key:
-                m.state_dict()[key][...] = nn.init.xavier_uniform(1)
-            elif key.split('.')[-1] == 'bias':
-                m.state_dict()[key][...] = 0.01
+    if isinstance(m, nn.Conv2d):
+        nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.BatchNorm2d):
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.Linear):
+        nn.init.normal_(m.weight, 0, 0.01)
+        nn.init.constant_(m.bias, 0)
 
 
 def initialize_lprnet_weights(lpr_model):
@@ -117,11 +119,23 @@ def initialize_lprnet_weights(lpr_model):
     print('Successful init LPR weights')
 
 
-def load_weights(model, weights):
+def load_lpr_weights(model, weights, device='cpu'):
     """Load pretrained weights for LPR net"""
-    model.load_state_dict(torch.load(weights))
+    model_sd = model.state_dict()
+    pretrained_model = torch.load(weights, map_location=torch.device(device))
+    filtered_dict = {k: v for k, v in pretrained_model.items() if k in model_sd}
+    filtered_dict.pop("backbone.20.weight")
+    filtered_dict.pop("backbone.20.bias")
+    filtered_dict.pop("backbone.21.weight")
+    filtered_dict.pop("backbone.21.bias")
+    filtered_dict.pop("backbone.21.running_mean")
+    filtered_dict.pop("backbone.21.running_var")
+    model_sd.update(filtered_dict)
+    model.load_state_dict(model_sd)
     print(f'Successful load weights for model: {model}')
 
+def load_stm_weights(model, weights, device='cpu'):
+    return model.load_state_dict(torch.load(weights, map_location=torch.device(device)))
 
 def build_lprnet(config, device):
     lprnet = LPRNet(class_num=len(config.CHARS.LIST),
@@ -130,7 +144,7 @@ def build_lprnet(config, device):
     lprnet.to(device)
     # Init LPR net weights
     if config.LPRNet.TRAIN.PRETRAINED_MODEL:
-        load_weights(model=lprnet, weights=config.LPRNet.TRAIN.PRETRAINED_MODEL)
+        load_lpr_weights(model=lprnet, weights=config.LPRNet.TRAIN.PRETRAINED_MODEL, device=device)
     else:
         initialize_lprnet_weights(lprnet)
     return lprnet
@@ -141,7 +155,7 @@ def build_stn(config, device):
     stn.to(device)
     # Init Spatial Transformer weights
     if config.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER:
-        load_weights(model=stn, weights=config.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER)
+        load_stm_weights(model=stn, weights=config.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER, device=device)
     return stn
 
 
@@ -218,11 +232,12 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            #print(_, pred_labels)
+            print(_, pred_labels)
             start = 0
             true_positive = 0
             for i, length in enumerate(lengths):
                 label = labels[start:start + length]
+                print(label)
                 start += length
                 if np.array_equal(np.array(pred_labels[i]), label.cpu().numpy()):
                     true_positive += 1

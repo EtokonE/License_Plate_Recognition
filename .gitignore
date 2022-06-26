@@ -100,6 +100,9 @@ bin/
 /data/processed
 /data/raw
 /data/test
+models/Final_LPRNet_model.pth
+models/Final_STN_model.pth
+
 
 # exclude external models from source control
 /src/external/
