@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from typing import List
 import numpy as np
 from tqdm import tqdm
+import pandas as pd
 
 
 def get_root_path() -> Path:
@@ -63,6 +64,10 @@ def get_final_config():
     cfg.LPRNet.TRAIN.OUT_FOLDER = args.out_dir
     cfg.ROOT.PATH = str(get_root_path())
     return cfg
+
+
+def save_final_config(config, save_path):
+    config.dump(stream=open(os.path.join(save_path, f'config.yaml'), 'w'))
 
 
 def create_out_folder(output_path: str) -> None:
@@ -285,6 +290,7 @@ def train():
     logger = get_logger(logfile=os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'train_logs.log'))
     logger.info(colorstr('hyperparameters: \n') +
                 '\n'.join(f'{colorstr("cyan", k)}\n{v}\n--------' for k, v in cfg.items()))
+    save_final_config(config=cfg, save_path=cfg.LPRNet.TRAIN.OUT_FOLDER)
 
     # Define device
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -345,7 +351,6 @@ def train():
             )
 
             pbar_outer.update(1)
-            history.append((train_loss, train_acc, val_loss, val_acc))
             if (epoch + 1) % cfg.LPRNet.TRAIN.SAVE_PERIOD == 0:
                 torch.save({
                     'epoch': epoch,
@@ -359,6 +364,8 @@ def train():
 
             for p in optimizer.param_groups:
                 curr_lr = p['lr']
+
+            history.append((train_loss, train_acc, val_loss, val_acc, curr_lr))
 
             if (epoch > cfg.LPRNet.TRAIN.NUM_EPOCHS / 4) and (curr_lr > 0.0003):
                 lr_sheduler.step()
@@ -387,7 +394,14 @@ def train():
     logger.info('Finally Best Accuracy: {:.4f} in epoch: {}'.format(best_acc, best_ep))
     logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
-    return history
+    history_df = pd.DataFrame(history, columns=[
+                                                'train_loss',
+                                                'train_acc',
+                                                'val_loss',
+                                                'val_acc',
+                                                'lr'
+                                                ])
+    history_df.to_csv(os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'history.csv'))
 
 
 if __name__ == '__main__':
