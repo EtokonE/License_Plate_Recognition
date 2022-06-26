@@ -23,20 +23,26 @@ _C.LPRNet.PREDICTED_LENGTHS = 18
 
 # Train LPRNet
 _C.LPRNet.TRAIN = CN()
-_C.LPRNet.TRAIN.OUT_FOLDER = osp.join(_C.ROOT.PATH, 'reports')
+_C.LPRNet.TRAIN.OUT_FOLDER_NAME = 'reports'
+_C.LPRNet.TRAIN.OUT_FOLDER = osp.join(_C.ROOT.PATH, _C.LPRNet.TRAIN.OUT_FOLDER_NAME)
 _C.LPRNet.TRAIN.PRETRAINED_MODEL = None
 _C.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER = None
 _C.LPRNet.TRAIN.IMG_SIZE = (94, 24)
 _C.LPRNet.TRAIN.BATCH_SIZE = 128
 _C.LPRNet.TRAIN.NUM_WORKERS = 4
 _C.LPRNet.TRAIN.NUM_EPOCHS = 4
+_C.LPRNet.TRAIN.SAVE_PERIOD = 2
 
 # Plate recognition dataset
 _C.LPR_dataset = CN()
-_C.LPR_dataset.PATH = osp.join(_C.ROOT.PATH, 'data/raw/licence_recognition/autoriaNumberplateOcrRu-2021-09-01/')
-_C.LPR_dataset.TRAIN_PATH = osp.join(_C.LPR_dataset.PATH, 'train')
-_C.LPR_dataset.VAL_PATH = osp.join(_C.LPR_dataset.PATH, 'val')
-_C.LPR_dataset.TEST_PATH = osp.join(_C.LPR_dataset.PATH, 'test')
+_C.LPR_dataset.PATH_RELATED_ROOT = 'data/raw/licence_recognition/autoriaNumberplateOcrRu-2021-09-01/'
+_C.LPR_dataset.PATH = osp.join(_C.ROOT.PATH, _C.LPR_dataset.PATH_RELATED_ROOT)
+_C.LPR_dataset.TRAIN_FOLDER = 'train'
+_C.LPR_dataset.TRAIN_PATH = osp.join(_C.LPR_dataset.PATH, _C.LPR_dataset.TRAIN_FOLDER)
+_C.LPR_dataset.VAL_FOLDER = 'val'
+_C.LPR_dataset.VAL_PATH = osp.join(_C.LPR_dataset.PATH, _C.LPR_dataset.VAL_FOLDER)
+_C.LPR_dataset.TEST_FOLDER = 'test'
+_C.LPR_dataset.TEST_PATH = osp.join(_C.LPR_dataset.PATH, _C.LPR_dataset.TEST_FOLDER)
 _C.LPR_dataset.IMG_SIZE = (94, 24)
 
 def get_cfg_defaults():

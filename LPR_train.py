@@ -346,15 +346,16 @@ def train():
 
             pbar_outer.update(1)
             history.append((train_loss, train_acc, val_loss, val_acc))
-            torch.save({
-                'epoch': epoch,
-                'net_state_dict': lprnet.state_dict()},
-                os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'lprnet_Ep_{epoch+1}_model.ckpt'))
+            if epoch % cfg.LPRNet.TRAIN.SAVE_PERIOD == 0:
+                torch.save({
+                    'epoch': epoch,
+                    'net_state_dict': lprnet.state_dict()},
+                    os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'lprnet_Ep_{epoch+1}_model.ckpt'))
 
-            torch.save({
-                'epoch': epoch,
-                'net_state_dict': stn.state_dict()},
-                os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'stn_Ep_{epoch+1}_model.ckpt'))
+                torch.save({
+                    'epoch': epoch,
+                    'net_state_dict': stn.state_dict()},
+                    os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'stn_Ep_{epoch+1}_model.ckpt'))
 
             for p in optimizer.param_groups:
                 curr_lr = p['lr']
