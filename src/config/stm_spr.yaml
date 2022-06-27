@@ -1,0 +1,9 @@
+LPRNet:
+  TRAIN:
+    NUM_EPOCHS: 100
+    SAVE_PERIOD: 20
+    BATCH_SIZE: 75
+    LR: 0.002
+    TRAIN_STN: True
+    LR_SHED_GAMMA: 0.95
+    PRETRAINED_MODEL: ./reports/exp6/weights/lprnet_BEST_model.ckpt
