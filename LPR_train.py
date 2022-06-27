@@ -209,7 +209,7 @@ def fit_epoch(lpr_model, spatial_transformer_model,
     running_loss = 0.0
     running_corrects = 0
     processed_data = 0
-
+    train_acc = 0
     for imgs, labels, lengths in train_loader:
         imgs, labels = imgs.to(device), labels.to(device)
         optimizer.zero_grad()
@@ -235,8 +235,10 @@ def fit_epoch(lpr_model, spatial_transformer_model,
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
             #print(_, pred_labels)
-            if len(pred_labels) not in (8, 9):
-                loss *= 1.4
+            if train_acc < 0.4:
+                if len(pred_labels) not in (8, 9):
+                    loss *= 1.4
+
             start = 0
             true_positive = 0
             for i, length in enumerate(lengths):
@@ -264,6 +266,7 @@ def eval_epoch(lpr_model, spatial_transformer_model,
     running_loss = 0.0
     running_corrects = 0
     processed_size = 0
+    val_acc = 0
 
     for imgs, labels, lenghts in val_loader:
         imgs, labels = imgs.to(device), labels.to(device)
@@ -283,8 +286,9 @@ def eval_epoch(lpr_model, spatial_transformer_model,
             )
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            if len(pred_labels) not in (8, 9):
-                loss *= 1.4
+            if val_acc < 0.2:
+                if len(pred_labels) not in (8, 9):
+                    loss *= 1.2
 
             start = 0
             true_positive = 0
@@ -299,7 +303,7 @@ def eval_epoch(lpr_model, spatial_transformer_model,
         processed_size += imgs.size(0)
     val_loss = running_loss / processed_size
     val_acc = running_corrects / processed_size
-    print(_, pred_labels)
+    print(_, pred_labels, labels)
     return val_loss, val_acc
 
 
@@ -395,7 +399,8 @@ def train():
 
             history.append((train_loss, train_acc, val_loss, val_acc, curr_lr))
 
-            if (epoch > cfg.LPRNet.TRAIN.NUM_EPOCHS / 3) and (curr_lr > 0.0001):
+            #if (epoch > cfg.LPRNet.TRAIN.NUM_EPOCHS / 3) and (curr_lr > 0.0001):
+            if curr_lr > 0.0001:
                 lr_sheduler.step()
 
             end_time_ep = time.time()

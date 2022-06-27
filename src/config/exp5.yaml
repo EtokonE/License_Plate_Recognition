@@ -1,0 +1,7 @@
+LPRNet:
+  TRAIN:
+    NUM_EPOCHS: 300
+    SAVE_PERIOD: 30
+    BATCH_SIZE: 75
+    LR: 0.003
+    TRAIN_STN: False

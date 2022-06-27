@@ -5,8 +5,8 @@ _C = CN()
 
 # Root dir (different for PC and Server)
 _C.ROOT = CN()
-_C.ROOT.PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' # LPR project dir
-#_C.ROOT.PATH = '.'
+#_C.ROOT.PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' # LPR project dir
+_C.ROOT.PATH = '.'
 
 # Chars parameters
 _C.CHARS = CN()

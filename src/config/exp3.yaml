@@ -1,0 +1,8 @@
+LPRNet:
+  TRAIN:
+    NUM_EPOCHS: 300
+    SAVE_PERIOD: 30
+    PRETRAINED_MODEL: './models/Final_LPRNet_model.pth'
+    PRETRAINED_SPATIAL_TRANSFORMER: './models/Final_STN_model.pth'
+    BATCH_SIZE: 75
+    LR: 0.02
