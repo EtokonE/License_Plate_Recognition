@@ -38,6 +38,7 @@ _C.LPRNet.TRAIN.SAVE_PERIOD = 2 # How often to save model weights (epoch)
 _C.LPRNet.TRAIN.LR = 0.01 # Initial train learning rate
 _C.LPRNet.TRAIN.LR_SHED_GAMMA = 0.99 # Gamma for ExponentialLR sheduler
 _C.LPRNet.TRAIN.CTC_REDUCTION = 'mean' # Reduction: 'none' | 'mean' | 'sum'
+_C.LPRNet.TRAIN.TRAIN_STN = True
 
 # Plate recognition dataset
 _C.LPR_dataset = CN()

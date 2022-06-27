@@ -201,7 +201,7 @@ def create_dataloaders(datasets: dict, cfg) -> dict:
 
 def fit_epoch(lpr_model, spatial_transformer_model,
               train_loader, criterion, optimizer,
-              device, chars, decode_fn, predicted_length):
+              device, chars, decode_fn, predicted_length, train_stn):
 
     spatial_transformer_model.train()
     lpr_model.train()
@@ -215,8 +215,9 @@ def fit_epoch(lpr_model, spatial_transformer_model,
         optimizer.zero_grad()
 
         with torch.set_grad_enabled(True):
-            transfer = spatial_transformer_model(imgs)
-            logits = lpr_model(transfer)  # torch.Size([batch_size, CHARS length, output length ])
+            if train_stn:
+                imgs = spatial_transformer_model(imgs)
+            logits = lpr_model(imgs)  # torch.Size([batch_size, CHARS length, output length ])
             log_probs = logits.permute(2, 0, 1)  # for ctc loss: output length x batch_size x CHARS length
             log_probs = log_probs.log_softmax(2).requires_grad_()
             ctc_input_lengths, ctc_target_lengths = sparse_tuple_for_ctc(predicted_length=predicted_length,
@@ -233,7 +234,9 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            print(_, pred_labels)
+            #print(_, pred_labels)
+            if len(pred_labels) not in (8, 9):
+                loss *= 1.4
             start = 0
             true_positive = 0
             for i, length in enumerate(lengths):
@@ -253,7 +256,7 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
 def eval_epoch(lpr_model, spatial_transformer_model,
                val_loader, criterion, decode_fn,
-               device, chars, predicted_length):
+               device, chars, predicted_length, train_stn):
 
     lpr_model.eval()
     spatial_transformer_model.eval()
@@ -265,8 +268,9 @@ def eval_epoch(lpr_model, spatial_transformer_model,
     for imgs, labels, lenghts in val_loader:
         imgs, labels = imgs.to(device), labels.to(device)
         with torch.set_grad_enabled(False):
-            transfer = spatial_transformer_model(imgs)
-            logits = lpr_model(transfer)
+            if train_stn:
+                imgs = spatial_transformer_model(imgs)
+            logits = lpr_model(imgs)
             log_probs = logits.permute(2, 0, 1)  # for ctc loss: output length x batch_size x CHARS length
             log_probs = log_probs.log_softmax(2).requires_grad_()
             ctc_input_lengths, ctc_target_lengths = sparse_tuple_for_ctc(predicted_length=predicted_length,
@@ -279,6 +283,8 @@ def eval_epoch(lpr_model, spatial_transformer_model,
             )
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
+            if len(pred_labels) not in (8, 9):
+                loss *= 1.4
 
             start = 0
             true_positive = 0
@@ -293,6 +299,7 @@ def eval_epoch(lpr_model, spatial_transformer_model,
         processed_size += imgs.size(0)
     val_loss = running_loss / processed_size
     val_acc = running_corrects / processed_size
+    print(_, pred_labels)
     return val_loss, val_acc
 
 
@@ -334,11 +341,15 @@ def train():
 
     with tqdm(desc="epoch", total=cfg.LPRNet.TRAIN.NUM_EPOCHS) as pbar_outer:
         # Define optimizer & loss & sheduler
-        optimizer = torch.optim.Adam([{'params': stn.parameters(), 'weight_decay': 2e-5},
-                                      {'params': lprnet.parameters()}],
-                                     lr=cfg.LPRNet.TRAIN.LR)
+        if cfg.LPRNet.TRAIN.TRAIN_STN:
+            optimizer = torch.optim.Adam([{'params': stn.parameters(), 'weight_decay': 2e-5},
+                                          {'params': lprnet.parameters()}],
+                                         lr=cfg.LPRNet.TRAIN.LR)
+        else:
+            optimizer = torch.optim.Adam(lprnet.parameters(), lr=cfg.LPRNet.TRAIN.LR)
         ctc_loss = nn.CTCLoss(blank=len(cfg.CHARS.LIST) - 1, reduction='mean')
         lr_sheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=cfg.LPRNet.TRAIN.LR_SHED_GAMMA)
+
 
         for epoch in range(cfg.LPRNet.TRAIN.NUM_EPOCHS):
             start_time_ep = time.time()
@@ -351,7 +362,8 @@ def train():
                 device=device,
                 chars=cfg.CHARS.LIST,
                 decode_fn=decode_function,
-                predicted_length=cfg.LPRNet.PREDICTED_LENGTHS
+                predicted_length=cfg.LPRNet.PREDICTED_LENGTHS,
+                train_stn=cfg.LPRNet.TRAIN.TRAIN_STN
             )
 
             val_loss, val_acc = eval_epoch(
@@ -362,7 +374,8 @@ def train():
                 device=device,
                 chars=cfg.CHARS.LIST,
                 decode_fn=decode_function,
-                predicted_length=cfg.LPRNet.PREDICTED_LENGTHS
+                predicted_length=cfg.LPRNet.PREDICTED_LENGTHS,
+                train_stn=cfg.LPRNet.TRAIN.TRAIN_STN
             )
 
             pbar_outer.update(1)
@@ -382,7 +395,7 @@ def train():
 
             history.append((train_loss, train_acc, val_loss, val_acc, curr_lr))
 
-            if (epoch > cfg.LPRNet.TRAIN.NUM_EPOCHS / 4) and (curr_lr > 0.0003):
+            if (epoch > cfg.LPRNet.TRAIN.NUM_EPOCHS / 3) and (curr_lr > 0.0001):
                 lr_sheduler.step()
 
             end_time_ep = time.time()

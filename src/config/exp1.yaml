@@ -2,7 +2,8 @@ LPRNet:
   TRAIN:
     NUM_EPOCHS: 100
     SAVE_PERIOD: 2
-    LR: 0.1
+    LR: 0.001
+    TRAIN_STN: False
 LPR_dataset:
   TRAIN_FOLDER: 'test_run'
   VAL_FOLDER: 'test_run'
