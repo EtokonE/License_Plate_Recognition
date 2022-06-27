@@ -409,6 +409,14 @@ def train():
                                       time=end_time_ep - start_time_ep, lr=curr_lr)
 
             logger.info(msg)
+            history_df = pd.DataFrame(history, columns=[
+                                                'train_loss',
+                                                'train_acc',
+                                                'val_loss',
+                                                'val_acc',
+                                                'lr'
+                                                ])
+            history_df.to_csv(os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'history.csv'))
 
             if val_acc >= best_acc:
                 best_acc = val_acc
@@ -426,15 +434,6 @@ def train():
     time_elapsed = time.time() - start_time
     logger.info('Finally Best Accuracy: {:.4f} in epoch: {}'.format(best_acc, best_ep))
     logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-
-    history_df = pd.DataFrame(history, columns=[
-                                                'train_loss',
-                                                'train_acc',
-                                                'val_loss',
-                                                'val_acc',
-                                                'lr'
-                                                ])
-    history_df.to_csv(os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'history.csv'))
 
 
 if __name__ == '__main__':
