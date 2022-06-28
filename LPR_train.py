@@ -125,12 +125,6 @@ def load_lpr_weights(model, weights, device='cpu'):
     model_sd = model.state_dict()
     pretrained_model = torch.load(weights, map_location=torch.device(device))
     filtered_dict = {k: v for k, v in pretrained_model.items() if k in model_sd}
-    #filtered_dict.pop("backbone.20.weight")
-    #filtered_dict.pop("backbone.20.bias")
-    #filtered_dict.pop("backbone.21.weight")
-    #filtered_dict.pop("backbone.21.bias")
-    #filtered_dict.pop("backbone.21.running_mean")
-    #filtered_dict.pop("backbone.21.running_var")
     model_sd.update(filtered_dict)
     model.load_state_dict(model_sd)
     print(f'Successful load weights for model: {model}')
