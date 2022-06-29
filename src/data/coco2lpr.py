@@ -21,8 +21,14 @@ import cv2
 import numpy as np
 from pathlib import Path
 from pydantic import BaseModel, ValidationError, Field
-from typing import List, Dict, NamedTuple, Optional
-from src.data.LPR_annotation_parser import ImageSize, parse_lpr_annotation
+from typing import List, NamedTuple, Optional
+from src.data.LPR_annotation_parser import ImageSize
+from src.config.config import get_cfg_defaults
+
+
+cfg = get_cfg_defaults()
+AVAILABLE_CHARS = cfg.CHARS.LIST
+AVAILABLE_CHARS.append('_')
 
 
 Image = np.ndarray
@@ -121,9 +127,25 @@ def get_single_image_ann(coco_dataset: CocoDataset, index: int) -> CocoImage:
     return coco_dataset.images[index]
 
 
-def process_fileame(filename: str) -> str:
+def process_fileame(filename: str, available_chars: List) -> str:
     filename = Path(filename).stem
-    return str(filename).upper()
+    translited_filename = translit(str(filename), available_chars)
+    return translited_filename
+
+
+def translit(sequence: str, available_chars: List):
+    en_chars = []
+    trans_dict = {'А': 'A', 'В': 'B', 'Е': 'E',
+                  'К': 'K', 'М': 'M', 'Н': 'H',
+                  'О': 'O', 'Р': 'P', 'С': 'C',
+                  'Т': 'T', 'У': 'Y', 'Х': 'X',
+                  '-': '-', '_': '_'}
+    for char in str(sequence):
+        if char not in available_chars:
+            char = trans_dict[char.upper()]
+        en_chars.append(char)
+    final_str = ''.join(en_chars)
+    return final_str
 
 
 def coco_annotation2lpr_annotation(coco_dataset: CocoDataset, index: int) -> LPRAnnotation:
@@ -133,13 +155,13 @@ def coco_annotation2lpr_annotation(coco_dataset: CocoDataset, index: int) -> LPR
     original_filename = image_ann.file_name
 
     if len(annotation.attributes.Number) != 0:
-        image_filename = process_fileame(annotation.attributes.Number)
+        image_filename = process_fileame(annotation.attributes.Number, AVAILABLE_CHARS)
     else:
-        image_filename = process_fileame(image_ann.file_name)
+        image_filename = process_fileame(image_ann.file_name, AVAILABLE_CHARS)
 
     return LPRAnnotation(
-        description = annotation.attributes.Number,
-        name = image_filename + '_' + str(random.randint(1, 10000)),
+        description = translit(annotation.attributes.Number, AVAILABLE_CHARS),
+        name = image_filename + '_' + str(random.randint(1, 650)),
         size = ImageSize(width=annotation.bbox.width,
                                height=annotation.bbox.height),
         original_image = original_filename
@@ -148,17 +170,14 @@ def coco_annotation2lpr_annotation(coco_dataset: CocoDataset, index: int) -> LPR
 
 def save_lpr_annotation(lpr_annotation: LPRAnnotation, ann_folder: Path) -> None:
     annotation_json = ann_folder / (lpr_annotation.name + '.json')
-    with open(annotation_json, 'w') as f:
+    with open(annotation_json, 'w', encoding='utf8') as f:
         json.dump(lpr_annotation.dict(), f)
 
 
 def load_image(image_folder: Path, filename: str) -> Image:
-    try:
-        image_path = image_folder / filename
-        image = cv2.imread(str(image_path))
-        return image
-    except Exception as e:
-        print(str(e))
+    image_path = image_folder / filename
+    image = cv2.imread(str(image_path))
+    return image
 
 
 def get_increased_coordinates(bbox: CocoBbox,
@@ -174,7 +193,6 @@ def get_increased_coordinates(bbox: CocoBbox,
 
 
 def crop_license_plate(image: Image, bbox: CocoBbox) -> Image:
-
     box2crop = get_increased_coordinates(bbox, multiplier_y=1.35)
     return image[box2crop.top_y:box2crop.bottom_y, box2crop.top_x:box2crop.bottom_x]
 
@@ -195,10 +213,11 @@ def main():
 
     coco_json_data = load_coco_dataset_annotations(coco_file=Path(args.coco_json_file))
     coco_data = get_coco_dataset_annotations(coco_json_data)
+
     for i in range(len(coco_data.annotations)):
         try:
             lpr = coco_annotation2lpr_annotation(coco_dataset=coco_data, index=i)
-            if len(lpr.description) == 0 and i % 100 != 0:
+            if len(lpr.description) == 0:
                 continue
             full_image = load_image(image_folder=Path(args.image_dir), filename=lpr.original_image)
             bbox = crop_license_plate(full_image, coco_data.annotations[i].bbox)

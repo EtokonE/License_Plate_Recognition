@@ -88,7 +88,7 @@ class LPRDataset(Dataset):
                       'К': 'K', 'М': 'M', 'Н': 'H',
                       'О': 'O', 'Р': 'P', 'С': 'C',
                       'Т': 'T', 'У': 'Y', 'Х': 'X'}
-        en_char = trans_dict[char.upper]
+        en_char = trans_dict[char.upper()]
         return en_char
 
 

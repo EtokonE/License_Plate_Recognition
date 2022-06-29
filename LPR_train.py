@@ -120,8 +120,8 @@ def initialize_lprnet_weights(lpr_model):
     print('Successful init LPR weights')
 
 
-def load_lpr_weights(model, weights, device='cpu'):
-    """Load pretrained weights for LPR net"""
+def load_weights(model, weights, device='cpu'):
+    """Load pretrained weights"""
     model_sd = model.state_dict()
     pretrained_model = torch.load(weights, map_location=torch.device(device))
     filtered_dict = {k: v for k, v in pretrained_model.items() if k in model_sd}
@@ -129,8 +129,6 @@ def load_lpr_weights(model, weights, device='cpu'):
     model.load_state_dict(model_sd)
     print(f'Successful load weights for model: {model}')
 
-def load_stm_weights(model, weights, device='cpu'):
-    return model.load_state_dict(torch.load(weights, map_location=torch.device(device)))
 
 def build_lprnet(config, device):
     lprnet = LPRNet(class_num=len(config.CHARS.LIST),
@@ -139,7 +137,7 @@ def build_lprnet(config, device):
     lprnet.to(device)
     # Init LPR net weights
     if config.LPRNet.TRAIN.PRETRAINED_MODEL:
-        load_lpr_weights(model=lprnet, weights=config.LPRNet.TRAIN.PRETRAINED_MODEL, device=device)
+        load_weights(model=lprnet, weights=config.LPRNet.TRAIN.PRETRAINED_MODEL, device=device)
     else:
         initialize_lprnet_weights(lprnet)
     return lprnet
@@ -150,7 +148,7 @@ def build_stn(config, device):
     stn.to(device)
     # Init Spatial Transformer weights
     if config.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER:
-        load_stm_weights(model=stn, weights=config.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER, device=device)
+        load_weights(model=stn, weights=config.LPRNet.TRAIN.PRETRAINED_SPATIAL_TRANSFORMER, device=device)
     return stn
 
 
@@ -195,7 +193,8 @@ def create_dataloaders(datasets: dict, cfg) -> dict:
 
 def fit_epoch(lpr_model, spatial_transformer_model,
               train_loader, criterion, optimizer,
-              device, chars, decode_fn, predicted_length, train_stn):
+              device, chars, decode_fn, predicted_length, train_stn,
+              avaliable_len):
 
     spatial_transformer_model.train()
     lpr_model.train()
@@ -228,9 +227,8 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            #print(_, pred_labels)
             if train_acc < 0.4:
-                if len(pred_labels) not in (8, 9):
+                if len(pred_labels) not in avaliable_len:
                     loss *= 1.4
 
             start = 0
@@ -252,7 +250,8 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
 def eval_epoch(lpr_model, spatial_transformer_model,
                val_loader, criterion, decode_fn,
-               device, chars, predicted_length, train_stn):
+               device, chars, predicted_length, train_stn,
+               avaliable_len):
 
     lpr_model.eval()
     spatial_transformer_model.eval()
@@ -281,7 +280,7 @@ def eval_epoch(lpr_model, spatial_transformer_model,
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
             if val_acc < 0.2:
-                if len(pred_labels) not in (8, 9):
+                if len(pred_labels) not in avaliable_len:
                     loss *= 1.2
 
             start = 0
@@ -299,6 +298,13 @@ def eval_epoch(lpr_model, spatial_transformer_model,
     val_acc = running_corrects / processed_size
     print(_, pred_labels, labels)
     return val_loss, val_acc
+
+
+def save_model(model, epoch, folder, indicator):
+    torch.save({
+        'epoch': epoch,
+        'net_state_dict': model.state_dict()},
+        os.path.join(folder, 'weights', f'{model}_Ep_{indicator}_model.ckpt'))
 
 
 def train():
@@ -345,11 +351,11 @@ def train():
                                          lr=cfg.LPRNet.TRAIN.LR)
         else:
             optimizer = torch.optim.Adam(lprnet.parameters(), lr=cfg.LPRNet.TRAIN.LR)
-        ctc_loss = nn.CTCLoss(blank=len(cfg.CHARS.LIST) - 1, reduction='mean')
+        ctc_loss = nn.CTCLoss(blank=len(cfg.CHARS.LIST) - 1, reduction=cfg.LPRNet.TRAIN.CTC_REDUCTION)
         lr_sheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=cfg.LPRNet.TRAIN.LR_SHED_GAMMA)
 
-
         for epoch in range(cfg.LPRNet.TRAIN.NUM_EPOCHS):
+            # Run epoch
             start_time_ep = time.time()
             train_loss, train_acc = fit_epoch(
                 lpr_model=lprnet,
@@ -361,7 +367,8 @@ def train():
                 chars=cfg.CHARS.LIST,
                 decode_fn=decode_function,
                 predicted_length=cfg.LPRNet.PREDICTED_LENGTHS,
-                train_stn=cfg.LPRNet.TRAIN.TRAIN_STN
+                train_stn=cfg.LPRNet.TRAIN.TRAIN_STN,
+                avaliable_len=cfg.LPRNet.TRAIN.AVALIABLE_LEN_FOR_COUNTRY
             )
 
             val_loss, val_acc = eval_epoch(
@@ -373,36 +380,37 @@ def train():
                 chars=cfg.CHARS.LIST,
                 decode_fn=decode_function,
                 predicted_length=cfg.LPRNet.PREDICTED_LENGTHS,
-                train_stn=cfg.LPRNet.TRAIN.TRAIN_STN
+                train_stn=cfg.LPRNet.TRAIN.TRAIN_STN,
+                avaliable_len=cfg.LPRNet.TRAIN.AVALIABLE_LEN_FOR_COUNTRY
             )
-
             pbar_outer.update(1)
+
+            # Save weights
             if (epoch + 1) % cfg.LPRNet.TRAIN.SAVE_PERIOD == 0:
-                torch.save({
-                    'epoch': epoch,
-                    'net_state_dict': lprnet.state_dict()},
-                    os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'lprnet_Ep_{epoch+1}_model.ckpt'))
+                save_model(model=lprnet,
+                           epoch=epoch,
+                           folder=cfg.LPRNet.TRAIN.OUT_FOLDER,
+                           indicator=epoch + 1)
+                save_model(model=stn,
+                           epoch=epoch,
+                           folder=cfg.LPRNet.TRAIN.OUT_FOLDER,
+                           indicator=epoch + 1)
 
-                torch.save({
-                    'epoch': epoch,
-                    'net_state_dict': stn.state_dict()},
-                    os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'stn_Ep_{epoch+1}_model.ckpt'))
-
+            # Get and configure Learning Rate
             for p in optimizer.param_groups:
                 curr_lr = p['lr']
-
-            history.append((train_loss, train_acc, val_loss, val_acc, curr_lr))
-
-            #if (epoch > cfg.LPRNet.TRAIN.NUM_EPOCHS / 3) and (curr_lr > 0.0001):
-            if curr_lr > 0.0001:
+            if curr_lr > LPRNet.TRAIN.MIN_LR:
                 lr_sheduler.step()
 
+            # Log info
             end_time_ep = time.time()
             msg = log_template.format(ep=epoch + 1, full_ep=cfg.LPRNet.TRAIN.NUM_EPOCHS, t_loss=train_loss,
                                       t_acc=train_acc, v_loss=val_loss, v_acc=val_acc,
                                       time=end_time_ep - start_time_ep, lr=curr_lr)
-
             logger.info(msg)
+
+            # Save history
+            history.append((train_loss, train_acc, val_loss, val_acc, curr_lr))
             history_df = pd.DataFrame(history, columns=[
                                                 'train_loss',
                                                 'train_acc',
@@ -412,19 +420,20 @@ def train():
                                                 ])
             history_df.to_csv(os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'history.csv'))
 
+            # Save best model
             if val_acc >= best_acc:
                 best_acc = val_acc
                 best_ep = epoch + 1
-                torch.save({
-                    'epoch': epoch,
-                    'net_state_dict': lprnet.state_dict()},
-                    os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'lprnet_BEST_model.ckpt'))
+                save_model(model=lprnet,
+                           epoch=epoch,
+                           folder=cfg.LPRNet.TRAIN.OUT_FOLDER,
+                           indicator='BEST')
+                save_model(model=stn,
+                           epoch=epoch,
+                           folder=cfg.LPRNet.TRAIN.OUT_FOLDER,
+                           indicator='BEST')
 
-                torch.save({
-                    'epoch': epoch,
-                    'net_state_dict': stn.state_dict()},
-                    os.path.join(cfg.LPRNet.TRAIN.OUT_FOLDER, 'weights', f'stn_BEST_model.ckpt'))
-
+    # Log final training information
     time_elapsed = time.time() - start_time
     logger.info('Finally Best Accuracy: {:.4f} in epoch: {}'.format(best_acc, best_ep))
     logger.info('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))

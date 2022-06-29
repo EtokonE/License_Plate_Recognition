@@ -1,5 +1,5 @@
 from os import path
-from typing import NamedTuple
+from typing import NamedTuple, List
 import pathlib
 
 PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' \
@@ -49,7 +49,7 @@ def get_annotation(raw_annotation: str) -> YoloAnnotationXYWH:
             height = int(filtred_raw[4])
             )
 
-def parse_ann_file(raw_annotation: str) -> list[YoloAnnotationXYWH]:
+def parse_ann_file(raw_annotation: str) -> List[YoloAnnotationXYWH]:
     full_image_annotation = []
     for ann in raw_annotation:
         full_image_annotation.append(get_annotation(ann))
@@ -65,16 +65,12 @@ def write_anat_file(text_file, normalized_list):
 def normalize_annotation(data_folder, w=1920, h=1080):
     for text_file in pathlib.Path(path.join(data_folder, 'labels/')).glob('*.txt'):
         raw_annotation = read_ann_file(text_file)
-        print(raw_annotation)
         annotation_list = parse_ann_file(raw_annotation)
-        print(annotation_list)
         normalized_list = []
         for anat in annotation_list:
             normalized_anat = xywh2xywhn2(anat, w, h)
-            print(normalized_anat)
             normalized_list.append(normalized_anat)
         write_anat_file(path.join(data_folder, 'norm_labels', text_file.name), normalized_list)
-        print(normalized_list)
 
 
 if __name__ == '__main__':
