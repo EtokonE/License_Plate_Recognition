@@ -78,8 +78,18 @@ class LPRDataset(Dataset):
         plate_number = ann.license_plate_number
         label = list()
         for char in plate_number:
+            if char not in self.chars_dict:
+                char = self._translit(char)
             label.append(self.chars_dict[char])
         return label
+
+    def _translit(self, char: str) -> str:
+        trans_dict = {'А': 'A', 'В': 'B', 'Е': 'E',
+                      'К': 'K', 'М': 'M', 'Н': 'H',
+                      'О': 'O', 'Р': 'P', 'С': 'C',
+                      'Т': 'T', 'У': 'Y', 'Х': 'X'}
+        en_char = trans_dict[char.upper]
+        return en_char
 
 
 def collate_fn(batch):
