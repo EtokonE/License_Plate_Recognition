@@ -7,6 +7,7 @@ from typing import Tuple
 from torch.utils.data import Dataset, DataLoader
 from src.data.LPR_annotation_parser import Annotation, parse_lpr_annotation
 from src.config.config import get_cfg_defaults
+from torchvision import transforms
 
 
 class LPRDataset(Dataset):
@@ -67,6 +68,8 @@ class LPRDataset(Dataset):
 
     def _prepare_sample(self, image):
         cv2.imwrite('reports/raw_image.png', image)
+        transformations = self._transforms()
+        image = transformations(image)
         image = cv2.resize(image, self.img_size, interpolation=cv2.INTER_AREA)
         image = image.astype('float32')
         image -= 127.5
@@ -90,6 +93,17 @@ class LPRDataset(Dataset):
                       'Т': 'T', 'У': 'Y', 'Х': 'X'}
         en_char = trans_dict[char.upper()]
         return en_char
+
+    def _transforms(self):
+        transformations = transforms.Compose([
+            transforms.ColorJitter(brightness=0.4, hue=0.5),
+            transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
+            transforms.RandomPerspective(distortion_scale=0.5, p=0.3),
+            transforms.RandomAffine(degrees=(5, 30)),
+            transforms.RandomAutocontrast(p=0.3)
+        ])
+        return transformations
+
 
 
 def collate_fn(batch):
