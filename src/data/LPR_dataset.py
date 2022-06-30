@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 from src.data.LPR_annotation_parser import Annotation, parse_lpr_annotation
 from src.config.config import get_cfg_defaults
 from torchvision import transforms
+from src.visualization.tools import convert_output_image
 
 
 class LPRDataset(Dataset):
@@ -67,14 +68,16 @@ class LPRDataset(Dataset):
             print(str(e))
 
     def _prepare_sample(self, image):
-        cv2.imwrite('reports/raw_image.png', image)
-        transformations = self._transforms()
-        image = transformations(image)
+        #cv2.imwrite('reports/raw_image.png', image)
         image = cv2.resize(image, self.img_size, interpolation=cv2.INTER_AREA)
         image = image.astype('float32')
         image -= 127.5
         image *= 0.0078125
         image = np.transpose(image, (2, 0, 1))
+        transformations = self._transforms()
+        image_tr = transformations(torch.Tensor(image))
+        image = image_tr.numpy()
+        #cv2.imwrite('reports/trans2.png', convert_output_image(image_tr))
         return image
 
     def _get_label(self, ann: Annotation):
@@ -96,11 +99,11 @@ class LPRDataset(Dataset):
 
     def _transforms(self):
         transformations = transforms.Compose([
-            transforms.ColorJitter(brightness=0.4, hue=0.5),
-            transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5)),
-            transforms.RandomPerspective(distortion_scale=0.5, p=0.3),
-            transforms.RandomAffine(degrees=(5, 30)),
-            transforms.RandomAutocontrast(p=0.3)
+            #transforms.ColorJitter(brightness=0.4, hue=0.5),
+            #transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 1)),
+            transforms.RandomPerspective(distortion_scale=0.5, p=1),
+            transforms.RandomAffine(degrees=(-5, 5)),
+            #transforms.RandomAutocontrast(p=1)
         ])
         return transformations
 

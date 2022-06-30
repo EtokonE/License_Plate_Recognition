@@ -233,7 +233,6 @@ def fit_epoch(lpr_model, spatial_transformer_model,
                 if np.array_equal(np.array(pred_labels[i]), label.cpu().numpy()):
                     true_positive += 1
                 if len(np.array(pred_labels[i])) != len(label.cpu().numpy()):
-                    print(len(np.array(pred_labels[i])), len(label.cpu().numpy()), 'pen2')
                     loss *= 1.2
 
         running_loss += loss.item() * imgs.size(0)
@@ -276,10 +275,6 @@ def eval_epoch(lpr_model, spatial_transformer_model,
             )
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            if val_acc < 0.2:
-                if len(pred_labels) not in avaliable_len:
-                    print(len(pred_labels), 'pen1')
-                    loss *= 1.2
 
             start = 0
             true_positive = 0
