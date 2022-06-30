@@ -119,4 +119,5 @@ if __name__ == '__main__':
     input_ = torch.Tensor(2, 3, 24, 94).to(device)
     output = lprnet(input_)
     print('Output shape is: ', output.shape)
+    print(type(output))
 

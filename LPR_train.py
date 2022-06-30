@@ -122,11 +122,8 @@ def initialize_lprnet_weights(lpr_model):
 
 def load_weights(model, weights, device='cpu'):
     """Load pretrained weights"""
-    model_sd = model.state_dict()
-    pretrained_model = torch.load(weights, map_location=torch.device(device))
-    filtered_dict = {k: v for k, v in pretrained_model.items() if k in model_sd}
-    model_sd.update(filtered_dict)
-    model.load_state_dict(model_sd)
+    checkpoint = torch.load(weights, map_location=torch.device(device))
+    model.load_state_dict(checkpoint['net_state_dict'])
     print(f'Successful load weights for model: {model}')
 
 
@@ -227,9 +224,6 @@ def fit_epoch(lpr_model, spatial_transformer_model,
 
             preds = logits.cpu().detach().numpy()
             _, pred_labels = decode_fn(preds, chars)
-            if train_acc < 0.4:
-                if len(pred_labels) not in avaliable_len:
-                    loss *= 1.4
 
             start = 0
             true_positive = 0
@@ -238,6 +232,9 @@ def fit_epoch(lpr_model, spatial_transformer_model,
                 start += length
                 if np.array_equal(np.array(pred_labels[i]), label.cpu().numpy()):
                     true_positive += 1
+                if len(np.array(pred_labels[i])) != len(label.cpu().numpy()):
+                    print(len(np.array(pred_labels[i])), len(label.cpu().numpy()), 'pen2')
+                    loss *= 1.2
 
         running_loss += loss.item() * imgs.size(0)
         running_corrects += true_positive
@@ -281,6 +278,7 @@ def eval_epoch(lpr_model, spatial_transformer_model,
             _, pred_labels = decode_fn(preds, chars)
             if val_acc < 0.2:
                 if len(pred_labels) not in avaliable_len:
+                    print(len(pred_labels), 'pen1')
                     loss *= 1.2
 
             start = 0
@@ -290,6 +288,8 @@ def eval_epoch(lpr_model, spatial_transformer_model,
                 start += length
                 if np.array_equal(np.array(pred_labels[i]), label.cpu().numpy()):
                     true_positive += 1
+                if len(np.array(pred_labels[i])) != len(label.cpu().numpy()):
+                    loss *= 1.2
 
         running_loss += loss.item() * imgs.size(0)
         running_corrects += true_positive
@@ -304,7 +304,7 @@ def save_model(model, epoch, folder, indicator):
     torch.save({
         'epoch': epoch,
         'net_state_dict': model.state_dict()},
-        os.path.join(folder, 'weights', f'{model}_Ep_{indicator}_model.ckpt'))
+        os.path.join(folder, 'weights', f'{model.__class__.__name__}_Ep_{indicator}_model.ckpt'))
 
 
 def train():
@@ -399,7 +399,7 @@ def train():
             # Get and configure Learning Rate
             for p in optimizer.param_groups:
                 curr_lr = p['lr']
-            if curr_lr > LPRNet.TRAIN.MIN_LR:
+            if curr_lr > cfg.LPRNet.TRAIN.MIN_LR:
                 lr_sheduler.step()
 
             # Log info

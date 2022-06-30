@@ -1,3 +1,5 @@
+ROOT:
+  PATH: '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/'
 LPRNet:
   TRAIN:
     NUM_EPOCHS: 100

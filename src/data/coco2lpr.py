@@ -30,7 +30,6 @@ cfg = get_cfg_defaults()
 AVAILABLE_CHARS = cfg.CHARS.LIST
 AVAILABLE_CHARS.append('_')
 
-
 Image = np.ndarray
 
 
