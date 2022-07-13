@@ -102,6 +102,7 @@ bin/
 /data/test
 models/Final_LPRNet_model.pth
 models/Final_STN_model.pth
+models/best.pt
 
 
 # exclude external models from source control
