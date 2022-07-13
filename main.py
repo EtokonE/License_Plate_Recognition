@@ -109,8 +109,7 @@ def save_img(out_dir, yolo_results, df_results, source=''):
                                    TextPosition(df_results.iloc[row][0], df_results.iloc[row][3]),
                                    text_size=40)
 
-    cv2.imwrite(os.path.join(out_dir, f'{source}2_results.png'), image)
-
+    cv2.imwrite(os.path.join(out_dir, f'{source}_results.png'), image)
 
 if __name__ == '__main__':
     cfg = get_cfg_defaults()

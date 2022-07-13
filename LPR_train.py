@@ -124,7 +124,7 @@ def load_weights(model, weights, device='cpu'):
     """Load pretrained weights"""
     checkpoint = torch.load(weights, map_location=torch.device(device))
     model.load_state_dict(checkpoint['net_state_dict'])
-    print(f'Successful load weights for model: {model}')
+    print(f'Successful load weights for model: {model.__class__.__name__}')
 
 
 def build_lprnet(config, device):

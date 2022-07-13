@@ -7,18 +7,8 @@ import torch
 import time
 import cv2
 import numpy as np
-from src.tools.utils import colorstr, decode_function
+from src.tools.utils import decode_function, BeamDecoder
 from LPR_train import load_weights
-from PIL import Image, ImageFont, ImageDraw
-
-def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
-    if (isinstance(img, np.ndarray)):  # detect opencv format or not
-        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    draw = ImageDraw.Draw(img)
-    fontText = ImageFont.truetype("data/NotoSansCJK-Regular.ttc", textSize, encoding="utf-8")
-    draw.text(pos, text, textColor, font=fontText)
-
-    return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
 
 if __name__ == '__main__':
@@ -32,12 +22,12 @@ if __name__ == '__main__':
                     dropout_prob=0,
                     out_indices=cfg.LPRNet.OUT_INDEXES)
     lprnet.to(device)
-    load_weights(model=lprnet, weights='./models/lprnet_BEST_model.ckpt', device=device)
+    load_weights(model=lprnet, weights='./models/LPRNet_Ep_BEST_model.ckpt', device=device)
     lprnet.eval()
 
     STN = SpatialTransformer()
     STN.to(device)
-    load_weights(model=STN, weights='./models/stn_BEST_model.ckpt', device=device)
+    load_weights(model=STN, weights='./models/SpatialTransformer_Ep_BEST_model.ckpt', device=device)
     STN.eval()
 
     print("Successful to build network!")
@@ -48,22 +38,20 @@ if __name__ == '__main__':
 
     im = (np.transpose(np.float32(im), (2, 0, 1)) - 127.5) * 0.0078125
     data = torch.from_numpy(im).float().unsqueeze(0).to(device)  # torch.Size([1, 3, 24, 94])
-    #print(data.shape, 'H' * 10)
-    transfer = STN(data)
-    #print(transfer, '+'* 10)
-    preds = lprnet(transfer)
-    preds = preds.cpu().detach().numpy()  # (1, 68, 18)
-    print(preds.shape)
-    labels, pred_labels = decode_function(preds, cfg.CHARS.LIST)
-    print("model inference in {:2.3f} seconds".format(time.time() - since))
-    print(image.shape, labels, pred_labels)
 
-    #img = cv2ImgAddText(image, labels[0], (0, 0))
-    image = add_text2image(image, labels[0], TextPosition(0, 0))
+    transfer = STN(data)
+    predictions = lprnet(transfer)
+    predictions = predictions.cpu().detach().numpy()  # (1, 68, 18)
+    labels, prob, pred_labels = decode_function(predictions, cfg.CHARS.LIST, BeamDecoder)
+    print("model inference in {:2.3f} seconds".format(time.time() - since))
 
     transformed_img = convert_output_image(transfer)
-    #cv2.imshow('transformed', transformed_img)
+    pad_image = cv2.copyMakeBorder(transformed_img, top=15, bottom=0, left=0, right=0,
+                                   borderType=cv2.BORDER_CONSTANT, value=[255, 255, 255])
+    if (prob[0] < -85) and (len(labels[0]) in [8, 9]):
+        pad_image = add_text2image(pad_image, (labels[0]), TextPosition(16, 0), text_size=10)
 
-    cv2.imshow("test", image)
+    cv2.imshow('Prediction', pad_image)
     cv2.waitKey()
     cv2.destroyAllWindows()
+    print(prob[0])

@@ -119,5 +119,12 @@ if __name__ == '__main__':
     input_ = torch.Tensor(2, 3, 24, 94).to(device)
     output = lprnet(input_)
     print('Output shape is: ', output.shape)
-    print(type(output))
+    #print(output[0])
+    #print(type(output))
+    from src.tools.utils import BeamDecoder, GreedyDecoder
+    beam_decoder = BeamDecoder()
+    preds = output.cpu().detach().numpy()
+    print(beam_decoder.decode(preds, cfg.CHARS.LIST))
+    greedy_decoder = GreedyDecoder()
+    print(greedy_decoder.decode(preds, cfg.CHARS.LIST))
 

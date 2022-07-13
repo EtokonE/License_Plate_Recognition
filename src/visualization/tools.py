@@ -23,7 +23,7 @@ def convert_output_image(lpr_output: torch.Tensor) -> np.ndarray:
 def add_text2image(image: np.ndarray,
                    text: str,
                    pos: TextPosition,
-                   fill: Tuple = (255, 0, 0),
+                   fill: Tuple = (0, 0, 0),
                    font: str = "data/NotoSansCJK-Regular.ttc",
                    text_size: int = 12) -> np.ndarray:
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
