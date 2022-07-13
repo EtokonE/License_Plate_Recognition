@@ -84,7 +84,7 @@ def filter_predictions(df_results, labels, log_likelihood):
 
 
 def df2json(df_results):
-    return df_results.to_json(orient="index")
+    return df_results.to_json(orient="records")
 
 
 def create_out_dir(out_dir):
