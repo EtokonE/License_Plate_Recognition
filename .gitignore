@@ -107,4 +107,8 @@ models/best.pt
 
 # exclude external models from source control
 /src/external/
-reports/
+reports/exp8_my_lpr_num
+reports/exp13_7with_aug
+reports/exp14_corners_false
+reports/train_ocr.txt
+reports/figures
