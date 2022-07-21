@@ -1,62 +1,21 @@
-"""
-Формат аннотация датасета OCR:
-    frame000060.txt
-    --------------
-    vehicles: 2
-position_vehicle: 768 122 555 478
-	type: car
-plate: ARG4068
-position_plate: 1115 551 93 34
-	char 1: 1123 564 9 17
-	char 2: 1133 564 11 18
-	char 3: 1144 564 10 16
-	char 4: 1160 562 9 16
-	char 5: 1170 562 10 16
-	char 6: 1181 562 10 16
-	char 7: 1191 561 10 16
-
-position_vehicle: 1403 0 348 190
-	type: car
-plate: AZI4586
-position_plate: 1582 127 65 25
-	char 1: 1587 133 7 12
-	char 2: 1594 134 9 12
-	char 3: 1603 134 5 13
-	char 4: 1613 136 7 12
-	    char 5: 1620 136 9 13
-	char 6: 1628 137 8 12
-	char 7: 1636 138 7 11
-
-
-Нужно преобразовать в YOLO формат:
-    frame000060.txt
-    --------------
-0 1115 551 93 34
-0 1582 127 65 25
-
-    train_ocs.txt
-    --------------
-data/obj_train_data/ocr/frame000060.txt
-"""
-
 import argparse
 import pathlib
 import re
 
-
-
 PATH = '/media/max/Transcend/max/plate_recognition/plate_detection_external_datasets/data/ocr_yolo/data'
 
-parser = argparse.ArgumentParser()
-parser.add_argument('ocr_folder', default=PATH, help='path to ocr folder')
-args = parser.parse_args()
 
+def create_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--ocr_folder', default=PATH, help='path to ocr folder')
+    args = parser.parse_args()
+    return args
 
-def find_bbox_coord(data: list, bbox_pattern='position_plate:') -> list:
+def find_bbox_coord(data: list, bbox_pattern: str = 'position_plate:') -> list:
     """
-    Находит координаты боксов в файлах аннотаций датасета OCR,
-    затем заменяет специфичный паттерн названия координат бокса на
-    паттерн, специфичный для YOLO формата
+    Finds the coordinates of boxes in the annotation files of the OCR dataset,
+    and replace the specific pattern of the name of the coordinates of the box with a
+    pattern specific to the YOLO format
     """
     yolo_annotation = []
     for line in data:
@@ -67,25 +26,25 @@ def find_bbox_coord(data: list, bbox_pattern='position_plate:') -> list:
     return yolo_annotation
 
 def read_txt_file(text_file: str) -> str:
-    """Читает текстовый файл"""
+    """Read text file"""
     with open(text_file, 'r') as f:
         data = f.readlines()
     return data
 
 def write_anat_file(text_file: str, anat: str) -> None:
-    """Записывает данные аннотаций в текстовый файл """
+    """Writes annotation data to a text file"""
     with open(text_file, 'w') as f:
         for line in anat:
             f.write(line)
 
-def write_train_file(train_data: list, filename='train_ocr.txt') -> None:
-    """Записывает данные о путях к тренировочным данным в отдельный файл"""
+def write_train_file(train_data: list, filename: str = 'train_ocr.txt') -> None:
+    """Writes data about training data paths to file"""
     with open(filename, 'w') as train_file:
         for train_path in train_data:
             train_file.write("%s\n" % train_path)
 
 def reannotate2yolostyle(ocr_dataset: str) -> None:
-    """Проводит переаннотацию из формата OCR в формат YOLO"""
+    """Performs reannotation from OCR format to YOLO format"""
     train_data = []
     for text_file in pathlib.Path(ocr_dataset).glob('*.txt'):
         data = read_txt_file(text_file)
@@ -96,7 +55,8 @@ def reannotate2yolostyle(ocr_dataset: str) -> None:
     write_train_file(train_data)
 
 def main():
-    reannotate2yolostyle(PATH)
+    args = create_parser()
+    reannotate2yolostyle(args.ocr_folder)
 
 if __name__ == '__main__':
     main()

@@ -1,9 +1,22 @@
+import pathlib
+import argparse
 from os import path
 from typing import NamedTuple, List
-import pathlib
+
 
 PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' \
        'data/raw/plate_detection_external_datasets/data/ocr_yolo/data/train/'
+
+def create_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--yolo_folder', default=PATH,
+                        help='the path to the folder containing the markup in yolo format')
+    parser.add_argument('--img_height', default=1080,
+                        help='height of image')
+    parser.add_argument('--img_width', default=1920,
+                        help='width of image')
+    args = parser.parse_args()
+    return args
 
 class YoloAnnotationXYWH(NamedTuple):
     object_class: int
@@ -74,5 +87,6 @@ def normalize_annotation(data_folder, w=1920, h=1080):
 
 
 if __name__ == '__main__':
-    normalize_annotation(PATH, 1920, 1080)
+    args = create_parser()
+    normalize_annotation(args.yolo_folder, args.img_width, args.img_height)
 
