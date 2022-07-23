@@ -5,7 +5,6 @@ from PIL import Image, ImageFont, ImageDraw
 import cv2
 
 
-
 class TextPosition(NamedTuple):
     x_top_teft: int
     y_lop_left: int
@@ -31,8 +30,3 @@ def add_text2image(image: np.ndarray,
     font = ImageFont.truetype(font, text_size, encoding="utf-8")
     draw.text(pos, text, fill, font)
     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
-
-
-
-
-#print(type(convert_output_image(torch.Tensor(3, 24, 94))))

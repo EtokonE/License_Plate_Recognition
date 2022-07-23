@@ -1,5 +1,5 @@
 import numpy as np
-from math import log
+
 
 def colorstr(*input):
     *args, string = input if len(input) > 1 else ('blue', 'bold', input[0])  # color arguments, string
@@ -42,7 +42,7 @@ class GreedyDecoder(Decoder):
             predicted_labels = []
             for j in range(single_prediction.shape[1]):
                 predicted_labels.append(np.argmax(single_prediction[:, j], axis=0))
-            #print(predicted_labels)
+
             without_repeating = []
             current_char = predicted_labels[0]
             if current_char != len(chars_list) - 1:
