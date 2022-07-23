@@ -38,9 +38,9 @@ class LPRNet(nn.Module):
             for embedding in global context
     """
     def __init__(self, 
-                class_num: int, 
-                dropout_prob: float, 
-                out_indices: Sequence[int]):
+                 class_num: int,
+                 dropout_prob: float,
+                 out_indices: Sequence[int]):
         super(LPRNet, self).__init__()
 
         self.class_num = class_num
@@ -50,12 +50,12 @@ class LPRNet(nn.Module):
             
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(), # -> extract feature map (2)
+            nn.ReLU(),  # -> extract feature map (2)
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
 
             SmallBasicBlock(in_channels=64, out_channels=128),
             nn.BatchNorm2d(num_features=128),
-            nn.ReLU(), # -> extract feature map (6)
+            nn.ReLU(),  # -> extract feature map (6)
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
             
             SmallBasicBlock(in_channels=64, out_channels=256),
@@ -63,7 +63,7 @@ class LPRNet(nn.Module):
             nn.ReLU(),
             SmallBasicBlock(in_channels=256, out_channels=256),
             nn.BatchNorm2d(num_features=256),
-            nn.ReLU(), # -> extract feature map (13)
+            nn.ReLU(),  # -> extract feature map (13)
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(4, 1, 2)),
             nn.Dropout(dropout_prob),
             
@@ -74,10 +74,13 @@ class LPRNet(nn.Module):
             
             nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1),
             nn.BatchNorm2d(num_features=self.class_num),
-            nn.ReLU(), # -> extract feature map (22)
+            nn.ReLU(),  # -> extract feature map (22)
         )
         # in_channels - sum of all channels in extracted feature maps (see the marks above)
-        self.container = nn.Conv2d(in_channels=64+128+256+self.class_num, out_channels=self.class_num, kernel_size=(1, 1), stride=(1, 1))
+        self.container = nn.Conv2d(in_channels=64 + 128 + 256 + self.class_num,
+                                   out_channels=self.class_num,
+                                   kernel_size=(1, 1),
+                                   stride=(1, 1))
 
     def forward(self, x):
         extracted_feature_maps = list()
@@ -102,6 +105,7 @@ class LPRNet(nn.Module):
         logits = torch.mean(x, dim=2)
         return logits
 
+
 if __name__ == '__main__':
     from torchsummary import summary
     from src.config.config import get_cfg_defaults
@@ -119,12 +123,9 @@ if __name__ == '__main__':
     input_ = torch.Tensor(2, 3, 24, 94).to(device)
     output = lprnet(input_)
     print('Output shape is: ', output.shape)
-    #print(output[0])
-    #print(type(output))
     from src.tools.utils import BeamDecoder, GreedyDecoder
     beam_decoder = BeamDecoder()
     preds = output.cpu().detach().numpy()
     print(beam_decoder.decode(preds, cfg.CHARS.LIST))
     greedy_decoder = GreedyDecoder()
     print(greedy_decoder.decode(preds, cfg.CHARS.LIST))
-
