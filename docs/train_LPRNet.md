@@ -70,7 +70,7 @@ _C.LPR_dataset.TEST_PATH = osp.join(_C.LPR_dataset.PATH, _C.LPR_dataset.TEST_FOL
 _C.LPR_dataset.IMG_SIZE = (94, 24)  # Standard image size
 ```
 
-### 2. Структура обучающего [датасета](docs/prepare_lpr_dataset.md)
+### 2. Структура обучающего [датасета](./prepare_lpr_dataset.md)
 ```tree
 ├──train
     ├── ann
@@ -91,7 +91,15 @@ _C.LPR_dataset.IMG_SIZE = (94, 24)  # Standard image size
 ```bash
 $ python LPR_train.py
 
-ptoinal arguments:
+Arguments:
  --out_dir                         Directory to save results
  --config                          Path to experiment configuration
+```
+
+### 4. Демо
+```bash
+$ python LPRNet_demo.py
+
+Arguments:
+--image                           License plate number image
 ```
