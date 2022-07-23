@@ -7,7 +7,7 @@ This script converts the labelling of the coco format into a dataset format for 
         ├──...
     ├── img
         ├──A645BH199.png
-        ├──B857HP76.json
+        ├──B857HP76.png
         ├──...
 ├──val
     ├──...
@@ -83,7 +83,7 @@ class BboxXYXY(NamedTuple):
 def create_parser():
     parser = argparse.ArgumentParser(description='Arguments to convert coco format to lpr format')
     parser.add_argument('--image_dir', type=str, help='Directory with images')
-    parser.add_argument('--coco_json_file', type=str, help='Json file with annotations in json format')
+    parser.add_argument('--coco_json_file', type=str, help='Json file with annotations in coco format')
     parser.add_argument('--out_dir', type=str, help='Directory to save results')
     args = parser.parse_args()
     return args
@@ -115,7 +115,6 @@ def get_coco_dataset_annotations(json_data: dict) -> CocoDataset:
         return CocoDataset(**json_data)
     except ValidationError as e:
         print('Exception', e.json())
-
 
 
 def get_single_annotation(coco_dataset: CocoDataset, index: int) -> CocoAnnotation:
@@ -159,11 +158,11 @@ def coco_annotation2lpr_annotation(coco_dataset: CocoDataset, index: int) -> LPR
         image_filename = process_fileame(image_ann.file_name, AVAILABLE_CHARS)
 
     return LPRAnnotation(
-        description = translit(annotation.attributes.Number, AVAILABLE_CHARS),
-        name = image_filename + '_' + str(random.randint(1, 650)),
-        size = ImageSize(width=annotation.bbox.width,
-                               height=annotation.bbox.height),
-        original_image = original_filename
+        description=translit(annotation.attributes.Number, AVAILABLE_CHARS),
+        name=image_filename + '_' + str(random.randint(1, 650)),
+        size=ImageSize(width=annotation.bbox.width,
+                       height=annotation.bbox.height),
+        original_image=original_filename
     )
 
 
@@ -183,12 +182,11 @@ def get_increased_coordinates(bbox: CocoBbox,
                               multiplier_y: float = 1.5,
                               multiplier_x: float = 1.0) -> BboxXYXY:
     return BboxXYXY(
-        top_x = int(bbox.top_x - bbox.width * (multiplier_x - 1)),
-        top_y = int(bbox.top_y - bbox.height * (multiplier_y - 1)),
-        bottom_x = int(bbox.top_x + bbox.width * multiplier_x),
-        bottom_y = int(bbox.top_y + bbox.height * multiplier_y)
+        top_x=int(bbox.top_x - bbox.width * (multiplier_x - 1)),
+        top_y=int(bbox.top_y - bbox.height * (multiplier_y - 1)),
+        bottom_x=int(bbox.top_x + bbox.width * multiplier_x),
+        bottom_y=int(bbox.top_y + bbox.height * multiplier_y)
     )
-
 
 
 def crop_license_plate(image: Image, bbox: CocoBbox) -> Image:
@@ -197,9 +195,9 @@ def crop_license_plate(image: Image, bbox: CocoBbox) -> Image:
 
 
 def save_cropped_image(image: Image,
-                     path: Path,
-                     filename: str,
-                     extension: str = '.png') -> None:
+                       path: Path,
+                       filename: str,
+                       extension: str = '.png') -> None:
     full_path = str((path / filename).with_suffix(extension))
     cv2.imwrite(full_path, image)
 
