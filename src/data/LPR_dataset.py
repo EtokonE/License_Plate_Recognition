@@ -8,7 +8,6 @@ from torch.utils.data import Dataset, DataLoader
 from src.data.LPR_annotation_parser import Annotation, parse_lpr_annotation
 from src.config.config import get_cfg_defaults
 from torchvision import transforms
-from src.visualization.tools import convert_output_image
 
 
 class LPRDataset(Dataset):
@@ -26,7 +25,7 @@ class LPRDataset(Dataset):
     data_modes = ['train', 'val', 'test']
 
     def __init__(self,
-                 data_dir: str,
+                 data_dir: Path,
                  chars: list,
                  mode: str,
                  img_size: Tuple[int, int]):
@@ -68,7 +67,6 @@ class LPRDataset(Dataset):
             print(str(e))
 
     def _prepare_sample(self, image):
-        #cv2.imwrite('reports/raw_image.png', image)
         image = cv2.resize(image, self.img_size, interpolation=cv2.INTER_AREA)
         image = image.astype('float32')
         image -= 127.5
@@ -77,7 +75,6 @@ class LPRDataset(Dataset):
         transformations = self._transforms()
         image_tr = transformations(torch.Tensor(image))
         image = image_tr.numpy()
-        #cv2.imwrite('reports/trans2.png', convert_output_image(image_tr))
         return image
 
     def _get_label(self, ann: Annotation):
@@ -108,7 +105,6 @@ class LPRDataset(Dataset):
         return transformations
 
 
-
 def collate_fn(batch):
     images = []
     labels = []
@@ -119,7 +115,7 @@ def collate_fn(batch):
         labels.extend(label)
         lengths.append(length)
     labels = np.asarray(labels).flatten()
-    return (torch.stack(images, 0), torch.from_numpy(labels), lengths)
+    return torch.stack(images, 0), torch.from_numpy(labels), lengths
 
 
 if __name__ == '__main__':
@@ -138,5 +134,3 @@ if __name__ == '__main__':
         break
     im, label, length = dataset[3]
     print(im.shape, label)
-
-
