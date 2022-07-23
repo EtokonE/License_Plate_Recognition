@@ -48,7 +48,7 @@ data/obj_train_data/ocr/frame000060.txt
 
 #### Если в дальнейшем необходима нормализация координат в разметке YOLO используем следующий скрипт
 ````bash
-$ python yolo2yolo_norm.py
+$ python -m src.data.yolo2yolo_norm
 
 Optoinal arguments:
  --yolo_folder                     default: PATH,          path to the folder containing the labelling in yolo format

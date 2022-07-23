@@ -1,6 +1,7 @@
 import argparse
-import pathlib
 import re
+from pathlib import Path
+from typing import List
 
 PATH = '/media/max/Transcend/max/plate_recognition/plate_detection_external_datasets/data/ocr_yolo/data'
 
@@ -10,6 +11,7 @@ def create_parser():
     parser.add_argument('--ocr_folder', default=PATH, help='path to ocr folder')
     args = parser.parse_args()
     return args
+
 
 def find_bbox_coord(data: list, bbox_pattern: str = 'position_plate:') -> list:
     """
@@ -25,17 +27,20 @@ def find_bbox_coord(data: list, bbox_pattern: str = 'position_plate:') -> list:
             yolo_annotation.append(yolo_style_anat)
     return yolo_annotation
 
-def read_txt_file(text_file: str) -> str:
+
+def read_txt_file(text_file: Path) -> List[str]:
     """Read text file"""
     with open(text_file, 'r') as f:
         data = f.readlines()
     return data
 
-def write_anat_file(text_file: str, anat: str) -> None:
+
+def write_anat_file(text_file: Path, anat: list) -> None:
     """Writes annotation data to a text file"""
     with open(text_file, 'w') as f:
         for line in anat:
             f.write(line)
+
 
 def write_train_file(train_data: list, filename: str = 'train_ocr.txt') -> None:
     """Writes data about training data paths to file"""
@@ -43,10 +48,11 @@ def write_train_file(train_data: list, filename: str = 'train_ocr.txt') -> None:
         for train_path in train_data:
             train_file.write("%s\n" % train_path)
 
+
 def reannotate2yolostyle(ocr_dataset: str) -> None:
     """Performs reannotation from OCR format to YOLO format"""
     train_data = []
-    for text_file in pathlib.Path(ocr_dataset).glob('*.txt'):
+    for text_file in Path(ocr_dataset).glob('*.txt'):
         data = read_txt_file(text_file)
         anat = find_bbox_coord(data, bbox_pattern='position_plate:')
         write_anat_file(text_file, anat)
@@ -54,10 +60,11 @@ def reannotate2yolostyle(ocr_dataset: str) -> None:
         train_data.append('data/obj_train_data/ocr/' + str(text_file.name))
     write_train_file(train_data)
 
+
 def main():
     args = create_parser()
     reannotate2yolostyle(args.ocr_folder)
 
+
 if __name__ == '__main__':
     main()
-

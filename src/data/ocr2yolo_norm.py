@@ -7,6 +7,7 @@ from typing import NamedTuple, List
 PATH = '/media/max/Transcend/max/plate_recognition/licence_plate_recognition/' \
        'data/raw/plate_detection_external_datasets/data/ocr_yolo/data/train/'
 
+
 def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo_folder', default=PATH,
@@ -18,12 +19,14 @@ def create_parser():
     args = parser.parse_args()
     return args
 
+
 class YoloAnnotationXYWH(NamedTuple):
     object_class: int
     x_center: int
     y_center: int
     width: int
     height: int
+
 
 class YoloAnnotationXYWHNorm(NamedTuple):
     object_class: int
@@ -32,14 +35,16 @@ class YoloAnnotationXYWHNorm(NamedTuple):
     width: float
     height: float
 
+
 def xywh2xywhn2(ann_xywh: YoloAnnotationXYWH, w, h) -> YoloAnnotationXYWHNorm:
     return(YoloAnnotationXYWHNorm(
-        object_class = ann_xywh.object_class,
-        x_center = round((ann_xywh.x_center + 0.5 * ann_xywh.width) / w, 6),
-        y_center = round((ann_xywh.y_center + 0.5 * ann_xywh.height) / h, 6),
-        width = round(ann_xywh.width / w, 6),
-        height = round(ann_xywh.height / h, 6)
+        object_class=ann_xywh.object_class,
+        x_center=round((ann_xywh.x_center + 0.5 * ann_xywh.width) / w, 6),
+        y_center=round((ann_xywh.y_center + 0.5 * ann_xywh.height) / h, 6),
+        width=round(ann_xywh.width / w, 6),
+        height=round(ann_xywh.height / h, 6)
         ))
+
 
 def num(s: str) -> float:
     try:
@@ -47,26 +52,30 @@ def num(s: str) -> float:
     except ValueError:
         return float(s)
 
-def read_ann_file(text_file: path) -> str:
+
+def read_ann_file(text_file: path) -> List[str]:
     with open(text_file, 'r', encoding='utf8') as f:
         data = f.readlines()
     return data
 
+
 def get_annotation(raw_annotation: str) -> YoloAnnotationXYWH:
     filtred_raw = raw_annotation[:-1].split(' ')
     return YoloAnnotationXYWH(
-            object_class = int(filtred_raw[0]),
-            x_center = int(filtred_raw[1]),
-            y_center = int(filtred_raw[2]),
-            width = int(filtred_raw[3]),
-            height = int(filtred_raw[4])
+            object_class=int(filtred_raw[0]),
+            x_center=int(filtred_raw[1]),
+            y_center=int(filtred_raw[2]),
+            width=int(filtred_raw[3]),
+            height=int(filtred_raw[4])
             )
 
-def parse_ann_file(raw_annotation: str) -> List[YoloAnnotationXYWH]:
+
+def parse_ann_file(raw_annotation: List[str]) -> List[YoloAnnotationXYWH]:
     full_image_annotation = []
     for ann in raw_annotation:
         full_image_annotation.append(get_annotation(ann))
     return full_image_annotation
+
 
 def write_anat_file(text_file, normalized_list):
     with open(text_file, 'w', encoding='utf8') as f:
@@ -74,6 +83,7 @@ def write_anat_file(text_file, normalized_list):
             str_anat = ' '.join([str(i) for i in anat])
             f.write(str_anat)
             f.write('\n')            
+
 
 def normalize_annotation(data_folder, w=1920, h=1080):
     for text_file in pathlib.Path(path.join(data_folder, 'labels/')).glob('*.txt'):
@@ -89,4 +99,3 @@ def normalize_annotation(data_folder, w=1920, h=1080):
 if __name__ == '__main__':
     args = create_parser()
     normalize_annotation(args.yolo_folder, args.img_width, args.img_height)
-

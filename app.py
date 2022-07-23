@@ -16,6 +16,7 @@ from src.tools.utils import decode_function, BeamDecoder
 
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 16
 cfg = get_cfg_defaults()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Service use device: {device}')
