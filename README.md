@@ -1,4 +1,7 @@
 # License Plate Recognition
+Detection and recognition of Russian license plates 
+using [YoloV5](https://github.com/ultralytics/yolov5) 
+and [License Plate Recognition Network](https://www.sciencedirect.com/science/article/abs/pii/S0167865518306998).
 ## Docker
 
 ```bash
@@ -28,14 +31,16 @@ $ curl -X POST -F file=@example_image.png http://0.0.0.0:8081/predict
        "confidence":0.840703547,"class":0,"name":"Plate","Number":null}}
 ```
 
-## Visual examples
-<img src="./reports/inference_results/09_03_39_8000000_5_results.png" width="900 px"/>
-<img src="./reports/inference_results/09_38_54_8000000_15_results.png" width="900 px"/>
-<img src="./reports/inference_results/img_1_0000000854_results.png" width="900 px"/>
-
 ## Docs
 
 - [Prepare dataset for yolo](./docs/prepare_yolo_dataset.md)
 - [Prepare lpr dataset](./docs/prepare_lpr_dataset.md)
 - [Train LPR Net and Spatial transformer](./docs/train_LPRNet.md)
 - [Inference](./docs/full_pipeline.md)
+
+## Visual examples
+<img src="./reports/inference_results/09_03_39_8000000_5_results.png" width="900 px"/>
+<img src="./reports/inference_results/09_38_54_8000000_15_results.png" width="900 px"/>
+<img src="./reports/inference_results/img_1_0000000854_results.png" width="900 px"/>
+
+
