@@ -42,5 +42,6 @@ $ curl -X POST -F file=@example_image.png http://0.0.0.0:8081/predict
 <img src="./reports/inference_results/09_03_39_8000000_5_results.png" width="900 px"/>
 <img src="./reports/inference_results/09_38_54_8000000_15_results.png" width="900 px"/>
 <img src="./reports/inference_results/img_1_0000000854_results.png" width="900 px"/>
-
+<img src="./reports/inference_results/LPR_example1.jpg" width="450 px"/>
+<img src="./reports/inference_results/LPR_example2.jpg" width="450 px"/>
 
